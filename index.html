@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gestor de Tareas</h1>
+        <div class="filters">
+            <label for="categoryFilter">Filtrar por Categoría:</label>
+            <select id="categoryOption">
+                <option value="all">Todas</option>
+                <option value="work">Trabajo</option>
+                <option value="personal">Personal</option>
+                <option value="urgent">Urgente</option>
+            </select>
+        </div>
+        <ul class="task-list"></ul>
+        <div class="statistics">
+            <p>Total de Tareas: <span id="totalTasks">0</span></p>
+            <p>Tareas Completadas: <span id="completedTasks">0</span></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
