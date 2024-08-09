@@ -2,6 +2,7 @@
 const d = document;
 // REFERENCIANDO A ELEMENTO POR SU CLASE
 const $listTasks = d.querySelector(".task-list");
+const $viewTask = d.querySelector(".view-task");
 const $totalTask = d.getElementById("totalTasks");
 const $completedTask = d.getElementById("completedTasks");
 
@@ -21,13 +22,13 @@ const tasks = [
 // FUNCION PARA CALCULAR EL TOTAL DE TAREAS COMPLETADAS
 const calculateCompletedTask = (acc, task) => {
     //el acc sera un objeto acumulador donde tendra promiedades acumuladoras
-    acc.total ++; // Incrementa el total de tareas
-    if (task.completed) acc.completed ++; // Incrementa las tareas completadas
+    acc.total++; // Incrementa el total de tareas
+    if (task.completed) acc.completed++; // Incrementa las tareas completadas
     return acc;
 };
 
 // Función para calcular estadísticas
-const calculateStatistics = (tasks) => tasks.reduce(calculateCompletedTask,{ total: 0, completed: 0 }); // Valor inicial del acumulador
+const calculateStatistics = () => tasks.reduce(calculateCompletedTask,{ total: 0, completed: 0 }); 
 
 // Función para actualizar las estadísticas en el DOM
 const updateStatistics = (tasks) => {
@@ -47,6 +48,9 @@ const evaluateLangCategory = (lang)=>{
         }
         case "urgent":{
             return "Urgente";
+        };
+        default:{
+            return "Todas";
         }
     }
 };
@@ -71,14 +75,8 @@ const evaluateMethodClassList = (el, method, nameClass)=>{
 // FUNCION QUE SE PUEDE UTILIZAR PARA AÑADIR,QUITAR O EVALUAR SI EXISTE  UNA CLASE
 const updateAddOrRemoveOrToggleClass = (el, method, ...className)=>{
     if(el){
-        if(method && className.length > 1){
-            className.forEach(nameClass => {
-                evaluateMethodClassList(el, method, nameClass);
-            });
-            return true;
-        }
-        if(method && className.length === 1){
-            evaluateMethodClassList(el, method, className);
+        if(method && className.length > 0){
+            className.forEach(nameClass => evaluateMethodClassList(el, method, nameClass));
             return true;
         }
     }
@@ -124,6 +122,7 @@ const createListTasksDom = (task, fragment)=>{
 // FUNCION PARA RENDERIZAR LAS TODAS LAS LISTAS DE TAREAS
 const renderListTasks = ()=>{
     $listTasks.innerHTML="";
+    $viewTask.textContent= isSelected ? `Viendo lista ${evaluateLangCategory(value)}` : "Viendo Todas las tareas";
     tasks.forEach(task => createListTasksDom(task, fragment));
     $listTasks.append(fragment);
     updateStatistics(tasks); // Actualiza estadísticas después de renderizar tareas
@@ -134,30 +133,47 @@ const filterOptionsTasks = (value)=>{
     if(tasks.length > 0) {
         const filterTasks = tasks.filter(({ category }) => category === value);
         if(filterTasks.length > 0) return filterTasks;
-        return false;
+        return true;
     }
 };
 
 // FUNCION PARA EVALUAR LA OPCION ELEGUIDA
+let isSelected =false;
 const evaluateOptionChange = (value)=>{
     switch(value){
         case "work":{
             createListTasksOption(value);
+            isSelected=true;
             break;
         };
         case "personal":{
             createListTasksOption(value);
+            isSelected=true;
             break;
         }
         case "urgent":{
             createListTasksOption(value);
+            isSelected=true;
             break;
         }
         default:{
-            renderListTasks(value);
+            renderListTasks();
+            isSelected=false;
             break;
         }
     }
+    $viewTask.textContent= isSelected ? `Viendo lista ${evaluateLangCategory(value)}` : "Viendo Todas las tareas";
+    isSelected=false;
+};
+
+
+//FUNCION PARA RECORRER Y CREAR LAS LISTAS DE TAREAS SEGUN OPCIÓN ELEGIDA
+const createListTasksOption = (e)=>{
+    $listTasks.innerHTML="";
+    const tasks = filterOptionsTasks(e);
+    tasks?.forEach(task => createListTasksDom(task, fragment)); 
+    $listTasks.append(fragment); 
+    updateStatistics(tasks); // Actualiza estadísticas después de filtrar tareas
 };
 
 // FUNCION PARA EVALUAR LOS EVENTOS DE CAMBIOS
@@ -171,22 +187,11 @@ const evaluateElementChanges =(e)=>{
             // Actualizar el estado del task
             const taskTitle = e.target.parentElement.querySelector("h2").textContent;
             const task = tasks.find(t => t.title === taskTitle);
-            if (task){
-                task.completed = e.target.checked;
-            } 
-            updateStatistics(tasks);
+            if (task) task.completed = e.target.checked;
+            updateStatistics(task);
             break;
         };
-    }
-};
-
-//FUNCION PARA RECORRER Y CREAR LAS LISTAS DE TAREAS SEGUN OPCIÓN ELEGIDA
-const createListTasksOption = (e)=>{
-    $listTasks.innerHTML="";
-    const tasks = filterOptionsTasks(e);
-    tasks?.forEach(task => createListTasksDom(task, fragment)); 
-    $listTasks.append(fragment); 
-    updateStatistics(tasks); // Actualiza estadísticas después de filtrar tareas
+    };
 };
 
 // FUNCION EVENTOS CHANGE
