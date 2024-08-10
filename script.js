@@ -122,7 +122,7 @@ const createListTasksDom = (task, fragment)=>{
 // FUNCION PARA RENDERIZAR LAS TODAS LAS LISTAS DE TAREAS
 const renderListTasks = ()=>{
     $listTasks.innerHTML="";
-    $viewTask.textContent="Todas las tareas";
+    $viewTask.textContent="Todas las tareas" || null;
     tasks.forEach(task => createListTasksDom(task, fragment));
     $listTasks.append(fragment);
     updateStatistics(tasks); 
@@ -132,29 +132,27 @@ const renderListTasks = ()=>{
 const filterOptionsTasks = (value)=>{
     if(tasks.length > 0) {
         const filterTasks = tasks.filter(({ category }) => category === value);
-        if(filterTasks.length > 0) {
-            return filterTasks;
-        }
+        if(filterTasks.length > 0) return filterTasks;
         return true;
     }
 };
 
 // FUNCION PARA EVALUAR LA OPCION ELEGUIDA
 let isSelected =false;
-const evaluateOptionChange = (value)=>{
-    switch(value){
+const evaluateOptionChange = (e)=>{
+    switch(e.target.value){
         case "work":{
-            createListTasksOption(value);
+            createListTasksOption(e.target.value);
             isSelected=true;
             break;
         };
         case "personal":{
-            createListTasksOption(value);
+            createListTasksOption(e.target.value);
             isSelected=true;
             break;
         }
         case "urgent":{
-            createListTasksOption(value);
+            createListTasksOption(e.target.value);
             isSelected=true;
             break;
         }
@@ -164,7 +162,7 @@ const evaluateOptionChange = (value)=>{
             break;
         }
     }
-    $viewTask.textContent= isSelected ? `Tarea/s ${evaluateLangCategory(value)}` : "Todas las tareas";
+    $viewTask.textContent= isSelected ? `Tarea/s ${evaluateLangCategory(e.target.value)}` : "Todas las tareas";
 };
 
 
@@ -176,13 +174,18 @@ const createListTasksOption = (e)=>{
     $listTasks.append(fragment); 
 };
 
+
+function createElementInfoCountTask(e){
+    const optionTasks = filterOptionsTasks(e.target.value);
+    console.log(optionTasks);
+}
+
 // FUNCION PARA EVALUAR LOS EVENTOS DE CAMBIOS
 const evaluateElementChanges =(e)=>{
     switch (true) {
         case e.target.matches("#categoryOption"):{
-            evaluateOptionChange(e.target.value);
-            const optionTasks = filterOptionsTasks(e);
-            console.log(optionTasks);
+            evaluateOptionChange(e);
+            createElementInfoCountTask(e);
             break;
         };
         case e.target.matches(".task-item input"):{
