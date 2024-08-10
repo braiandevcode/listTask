@@ -2,7 +2,7 @@
 const d = document;
 // REFERENCIANDO A ELEMENTO POR SU CLASE
 const $listTasks = d.querySelector(".task-list");
-const $viewTask = d.querySelector(".view-task");
+const $viewTask = d.querySelector(".statistics__titleViewTask");
 const $totalTask = d.getElementById("totalTasks");
 const $completedTask = d.getElementById("completedTasks");
 
@@ -23,7 +23,7 @@ const tasks = [
 const calculateCompletedTask = (acc, task) => {
     //el acc sera un objeto acumulador donde tendra promiedades acumuladoras
     acc.total++; // Incrementa el total de tareas
-    if (task.completed) acc.completed++; // Incrementa las tareas completadas
+    if (task.completed) acc.completed++;
     return acc;
 };
 
@@ -99,7 +99,7 @@ const createListTasksDom = (task, fragment)=>{
     inputTask.setAttribute("data-check", `${completed}`);
     inputTask.setAttribute("placeholder", "check");
 
-    updateAddOrRemoveOrToggleClass(listItem, "add", "task-item");
+    updateAddOrRemoveOrToggleClass(listItem, "add", "task-item", "d-flex", "justify-content-between", "align-items-center");
     updateAddOrRemoveOrToggleClass(containerTask, "add", "task-info");
     updateAddOrRemoveOrToggleClass(inputTask, "add", "task-completed");
 
@@ -122,17 +122,19 @@ const createListTasksDom = (task, fragment)=>{
 // FUNCION PARA RENDERIZAR LAS TODAS LAS LISTAS DE TAREAS
 const renderListTasks = ()=>{
     $listTasks.innerHTML="";
-    $viewTask.textContent= isSelected ? `Viendo lista ${evaluateLangCategory(value)}` : "Viendo Todas las tareas";
+    $viewTask.textContent="Todas las tareas";
     tasks.forEach(task => createListTasksDom(task, fragment));
     $listTasks.append(fragment);
-    updateStatistics(tasks); // Actualiza estadísticas después de renderizar tareas
+    updateStatistics(tasks); 
 };
 
 // FUNCION QUE SE ENCARGARA DE FILTRAR LAS OPCIONES REUTILIZANDO FUNCION QUE CREA EL DOM
 const filterOptionsTasks = (value)=>{
     if(tasks.length > 0) {
         const filterTasks = tasks.filter(({ category }) => category === value);
-        if(filterTasks.length > 0) return filterTasks;
+        if(filterTasks.length > 0) {
+            return filterTasks;
+        }
         return true;
     }
 };
@@ -162,8 +164,7 @@ const evaluateOptionChange = (value)=>{
             break;
         }
     }
-    $viewTask.textContent= isSelected ? `Viendo lista ${evaluateLangCategory(value)}` : "Viendo Todas las tareas";
-    isSelected=false;
+    $viewTask.textContent= isSelected ? `Tarea/s ${evaluateLangCategory(value)}` : "Todas las tareas";
 };
 
 
@@ -173,7 +174,6 @@ const createListTasksOption = (e)=>{
     const tasks = filterOptionsTasks(e);
     tasks?.forEach(task => createListTasksDom(task, fragment)); 
     $listTasks.append(fragment); 
-    updateStatistics(tasks); // Actualiza estadísticas después de filtrar tareas
 };
 
 // FUNCION PARA EVALUAR LOS EVENTOS DE CAMBIOS
@@ -181,13 +181,16 @@ const evaluateElementChanges =(e)=>{
     switch (true) {
         case e.target.matches("#categoryOption"):{
             evaluateOptionChange(e.target.value);
+            const optionTasks = filterOptionsTasks(e);
+            console.log(optionTasks);
             break;
         };
         case e.target.matches(".task-item input"):{
             // Actualizar el estado del task
             const taskTitle = e.target.parentElement.querySelector("h2").textContent;
             const task = tasks.find(t => t.title === taskTitle);
-            if (task) task.completed = e.target.checked;
+            if (task) task.completed = e.target.checked;        
+            console.log(task);
             updateStatistics(task);
             break;
         };
