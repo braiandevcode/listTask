@@ -6,8 +6,6 @@ const $viewTask = d.querySelector(".statistics__titleViewTask");
 const $totalTask = d.getElementById("totalTasks");
 const $completedTask = d.getElementById("completedTasks");
 
-
-
 const fragment = d.createDocumentFragment();
 
 // ARREGLO DE OBJETOS CON LA INFORMACION DE CADA TAREA
@@ -19,20 +17,20 @@ const tasks = [
     { title: 'Reunión con el equipo', category: 'work', date: '2024-08-08', completed: true }
 ];
 
-// FUNCION PARA CALCULAR EL TOTAL DE TAREAS COMPLETADAS
-const calculateCompletedTask = (acc, task) => {
-    //el acc sera un objeto acumulador donde tendra promiedades acumuladoras
-    acc.total++; // Incrementa el total de tareas
-    if (task.completed) acc.completed++;
-    return acc;
+// FUNCION PARA CALCULAR EL TOTAL DE TAREAS COMPLETADAS SEGUN UNA LISTA
+const calculateCompletedTask = (tasks) => {
+    return tasks.reduce((acc, task) => {
+        acc.total++; // Incrementa el total de tareas
+        if (task.completed) acc.completed++;
+        return acc;
+    }, { total: 0, completed: 0 });
 };
 
-// Función para calcular estadísticas
-const calculateStatistics = () => tasks.reduce(calculateCompletedTask,{ total: 0, completed: 0 }); 
-
-// Función para actualizar las estadísticas en el DOM
+// FUNCION PARA ACTUALIZAR LAS ESTADISTICAS EN EL DOM SEGUN UNA LISTA DE TAREAS
 const updateStatistics = (tasks) => {
-    const stats = calculateStatistics(tasks);
+    const stats = calculateCompletedTask(tasks);
+    console.log(stats);
+    
     $totalTask.textContent = stats.total; // Actualiza el total de tareas en el DOM
     $completedTask.textContent = stats.completed; // Actualiza las tareas completadas en el DOM
 };
@@ -96,7 +94,6 @@ const createListTasksDom = (task, fragment)=>{
     const inputTask = d.createElement("INPUT");
     inputTask.setAttribute("type", "checkbox");
     inputTask.checked = completed;
-    inputTask.setAttribute("data-check", `${completed}`);
     inputTask.setAttribute("placeholder", "check");
 
     updateAddOrRemoveOrToggleClass(listItem, "add", "task-item", "d-flex", "justify-content-between", "align-items-center");
@@ -132,79 +129,52 @@ const renderListTasks = ()=>{
 const filterOptionsTasks = (value)=>{
     if(tasks.length > 0) {
         const filterTasks = tasks.filter(({ category }) => category === value);
-        if(filterTasks.length > 0) return filterTasks;
-        return true;
+        return filterTasks; // Devolver siempre un array
     }
+    return []; // Si no hay tareas, devolver un array vacío
 };
 
-// FUNCION PARA EVALUAR LA OPCION ELEGUIDA
-let isSelected =false;
-const evaluateOptionChange = (e)=>{
-    switch(e.target.value){
-        case "work":{
-            createListTasksOption(e.target.value);
-            isSelected=true;
-            break;
-        };
-        case "personal":{
-            createListTasksOption(e.target.value);
-            isSelected=true;
-            break;
-        }
-        case "urgent":{
-            createListTasksOption(e.target.value);
-            isSelected=true;
-            break;
-        }
-        default:{
-            renderListTasks();
-            isSelected=false;
-            break;
-        }
-    }
-    $viewTask.textContent= isSelected ? `Tarea/s ${evaluateLangCategory(e.target.value)}` : "Todas las tareas";
+// FUNCION PARA CREAR LAS LISTAS DE TAREAS SEGUN OPCIÓN ELEGIDA
+const createListTasksOption = (value) => {
+    $listTasks.innerHTML = "";
+    const filteredTasks = filterOptionsTasks(value);
+    filteredTasks.forEach(task => createListTasksDom(task, fragment));
+    $listTasks.append(fragment);
+    updateStatistics(filteredTasks); // Actualizar estadísticas según las tareas filtradas
 };
-
-
-//FUNCION PARA RECORRER Y CREAR LAS LISTAS DE TAREAS SEGUN OPCIÓN ELEGIDA
-const createListTasksOption = (e)=>{
-    $listTasks.innerHTML="";
-    const tasks = filterOptionsTasks(e);
-    tasks?.forEach(task => createListTasksDom(task, fragment)); 
-    $listTasks.append(fragment); 
-};
-
-
-function createElementInfoCountTask(e){
-    const optionTasks = filterOptionsTasks(e.target.value);
-    console.log(optionTasks);
-}
 
 // FUNCION PARA EVALUAR LOS EVENTOS DE CAMBIOS
-const evaluateElementChanges =(e)=>{
-    switch (true) {
-        case e.target.matches("#categoryOption"):{
-            evaluateOptionChange(e);
-            createElementInfoCountTask(e);
-            break;
-        };
-        case e.target.matches(".task-item input"):{
-            // Actualizar el estado del task
-            const taskTitle = e.target.parentElement.querySelector("h2").textContent;
-            const task = tasks.find(t => t.title === taskTitle);
-            if (task) task.completed = e.target.checked;        
-            console.log(task);
-            updateStatistics(task);
-            break;
-        };
+const evaluateElementChanges = (e) => {
+    if (e.target.matches("#categoryOption")) {
+        evaluateOptionChange(e);
+    } else if (e.target.matches(".task-item input")) {
+        // Actualizar el estado del task
+        const taskTitle = e.target.parentElement.querySelector("h2").textContent;
+        const task = tasks.find(t => t.title === taskTitle);
+        if (task) task.completed = e.target.checked;
+
+        const currentOption = d.querySelector("#categoryOption").value;
+        const currentTasks = currentOption === "all" ? tasks : filterOptionsTasks(currentOption);
+        updateStatistics(currentTasks);
+    }
+};
+
+// FUNCION PARA EVALUAR LA OPCION ELEGIDA
+const evaluateOptionChange = (e) => {
+    const selectedCategory = e.target.value;
+    if (selectedCategory === "all") {
+        renderListTasks(); // Mostrar todas las tareas
+    } else {
+        createListTasksOption(selectedCategory);
     };
+    $viewTask.textContent = selectedCategory !== "all" ? `Tarea/s ${evaluateLangCategory(selectedCategory)}` : "Todas las tareas";
 };
 
 // FUNCION EVENTOS CHANGE
-const eventChanges = ()=> d.addEventListener("change", evaluateElementChanges);
+const eventChanges = () => d.addEventListener("change", evaluateElementChanges);
 
 // FUNCION QUE SE ENCARGARIA DE EJECUTAR TODO LO QUE TIENE QUE VERSE EN LA PAGINA
-const initPage = ()=>{
+const initPage = () => {
     // RENDERIZAR PAFINA TAREAS
     renderListTasks();
     // EVALUAR EVENTO CHANGE
@@ -213,4 +183,3 @@ const initPage = ()=>{
 
 // EVENTO DE CARGA QUE EJECUTA EL INICIO DE LA PAGINA SOLO AL ESCUCHAR EL EVENTO DE CARGA.
 d.addEventListener("DOMContentLoaded", initPage);
-
