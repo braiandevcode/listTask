@@ -14,4 +14,4 @@ El proyecto se basa en una estructura estática de tareas, demostrando la manipu
 
 
 <img src="./assets/images/cap1.png" style="margin-bottom: 1rem;" width="300">
-        <img src="./assets/images/cap2.png" style="margin-bottom: 1rem;" width="300">
+<img src="./assets/images/cap2.png" style="margin-bottom: 1rem;" width="300">
